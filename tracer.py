@@ -7,7 +7,6 @@ from scapy.layers.inet import IP, UDP
 import socket
 from ipwhois import IPWhois
 
-
 def get_asn(ip: str) -> str:
     try:
         obj = IPWhois(ip)
