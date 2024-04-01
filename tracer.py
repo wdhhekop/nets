@@ -2,7 +2,7 @@ from typing import List, Tuple
 
 from prettytable import PrettyTable
 import argparse
-from scapy.all import sr1, traceroute
+from scapy.all import sr1
 from scapy.layers.inet import IP, UDP
 import socket
 from ipwhois import IPWhois
@@ -18,15 +18,7 @@ def get_asn(ip: str) -> str:
     return asn_description
 
 
-def get_additional_description(domain_info):
-    if hasattr(domain_info, 'description') and domain_info.description:
-        additional_description = "Description:", domain_info.description
-    else:
-        additional_description = "No Additional Description"
-    return additional_description
-
-
-def traceroute(dst: str, max_hops: int = 30, timeout: int = 1) -> List[Tuple[str, str]]:
+def custom_traceroute(dst: str, max_hops: int = 30, timeout: int = 1) -> List[Tuple[str, str]]:
     ip = socket.gethostbyname(dst)
     ttl = 1
     trace_list = []
@@ -54,7 +46,7 @@ def main():
     dst = args.destination
 
     print(f"Tracing route to {dst}...\n")
-    trace_info = traceroute(dst)
+    trace_info = custom_traceroute(dst)
 
     table = PrettyTable()
     table.field_names = ["IP", "AS", "Country", "Description"]
@@ -64,14 +56,10 @@ def main():
     table.align["Description"] = "c"
 
     for ip, asn_info in trace_info:
-        asn_info = asn_info.replace(',', '')
-        asn = "AS" + asn_info.split()[0] if asn_info != "No AS Info" else ""
-        country = asn_info.split()[1] if asn_info != "No AS Info" else ""
-        description = " ".join(asn_info.split()[2:]) if asn_info != "No AS Info" else ""
-
-        additional_description = get_additional_description(asn)
-        if additional_description != "No Additional Description":
-            description += f" ({additional_description})"
+        asn_info_parts = asn_info.replace(',', '').split()
+        asn = "AS" + asn_info_parts[0] if len(asn_info_parts) > 0 else ""
+        country = asn_info_parts[1] if len(asn_info_parts) > 1 else ""
+        description = " ".join(asn_info_parts[2:]) if len(asn_info_parts) > 2 else ""
 
         table.add_row([ip, asn, country, description])
 
