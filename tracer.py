@@ -60,7 +60,11 @@ def main():
         asn = "AS" + asn_info_parts[0] if len(asn_info_parts) > 0 else ""
         country = asn_info_parts[1] if len(asn_info_parts) > 1 else ""
         description = " ".join(asn_info_parts[2:]) if len(asn_info_parts) > 2 else ""
+        if '.' in country:
+            country, description = description, country
 
+        if description == 'Info' or description == '':
+            description = ''
         table.add_row([ip, asn, country, description])
 
     print(table)
